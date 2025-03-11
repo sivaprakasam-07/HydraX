@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/battery_status.dart';
 import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
@@ -7,17 +8,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  double _waterLevel = 70.0; // Water level percentage
+  double _batteryLevel = 75.0; // Placeholder battery level
   double _currentTemperature = 25.0; // Default temperature
-
   late AnimationController _waveController;
 
   @override
   void initState() {
     super.initState();
-    _waveController =
-        AnimationController(vsync: this, duration: Duration(seconds: 2))
-          ..repeat(reverse: true);
+    _waveController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    )..repeat(reverse: true);
   }
 
   @override
@@ -41,38 +42,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black, // Set background to black
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               'HydraX',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             SizedBox(height: 20),
             Stack(
               alignment: Alignment.center,
               children: [
-                // Water Bottle Shape
+                // Battery Shape (Bottle shape)
                 Container(
                   width: 120,
                   height: 300,
                   decoration: BoxDecoration(
-                    color: Colors.blue[100],
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(50),
-                    border: Border.all(color: Colors.blue, width: 4),
+                    border: Border.all(
+                      color: _batteryLevel < 20 ? Colors.redAccent : Colors.greenAccent,
+                      width: 4,
+                    ),
                   ),
                 ),
-                // Water Wave Animation
+                // Animated Battery Level (Wave)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(50),
                   child: AnimatedBuilder(
                     animation: _waveController,
                     builder: (context, child) {
                       return CustomPaint(
-                        painter: WaterPainter(
-                            waveOffset: _waveController.value,
-                            waterLevel: _waterLevel),
+                        painter: BatteryPainter(
+                          waveOffset: _waveController.value,
+                          batteryLevel: _batteryLevel,
+                        ),
                         child: Container(
                           width: 120,
                           height: 300,
@@ -81,30 +91,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     },
                   ),
                 ),
-                // Water Level Text
+                // Battery Percentage Text
                 Text(
-                  '${_waterLevel.toInt()}%',
+                  '${_batteryLevel.toInt()}%',
                   style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
             SizedBox(height: 20),
+            // Temperature Display
             Text(
               'Temperature: ${_currentTemperature.toStringAsFixed(1)}°C',
-              style: TextStyle(fontSize: 20),
+              style: TextStyle(fontSize: 20, color: Colors.white),
             ),
+            SizedBox(height: 10),
+            // Temperature Control Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.remove, size: 30),
+                  icon: Icon(Icons.remove, size: 30, color: Colors.white),
                   onPressed: _decreaseTemperature,
                 ),
                 IconButton(
-                  icon: Icon(Icons.add, size: 30),
+                  icon: Icon(Icons.add, size: 30, color: Colors.white),
                   onPressed: _increaseTemperature,
                 ),
               ],
@@ -116,24 +130,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-class WaterPainter extends CustomPainter {
+// Battery Wave Animation Painter
+class BatteryPainter extends CustomPainter {
   final double waveOffset;
-  final double waterLevel;
+  final double batteryLevel;
 
-  WaterPainter({required this.waveOffset, required this.waterLevel});
+  BatteryPainter({required this.waveOffset, required this.batteryLevel});
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Change wave color based on battery level
+    Color waveColor = batteryLevel < 20 ? Colors.redAccent : Colors.greenAccent;
+
     Paint wavePaint = Paint()
-      ..color = Colors.blueAccent
+      ..color = waveColor
       ..style = PaintingStyle.fill;
 
-    double waterHeight = (1 - (waterLevel / 100)) * size.height;
+    double batteryHeight = (1 - (batteryLevel / 100)) * size.height;
 
     Path wavePath = Path();
     for (double i = 0; i <= size.width; i++) {
       double waveHeight = sin((i / size.width * 2 * pi) + (waveOffset * 2 * pi)) * 10;
-      wavePath.lineTo(i, waterHeight + waveHeight);
+      wavePath.lineTo(i, batteryHeight + waveHeight);
     }
     wavePath.lineTo(size.width, size.height);
     wavePath.lineTo(0, size.height);
