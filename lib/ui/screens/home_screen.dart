@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/battery_status.dart';
-import 'dart:math';
+import 'settings_screen.dart';
+import 'dart:async'; // Needed for auto battery charging
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -8,9 +9,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  double _batteryLevel = 75.0; // Placeholder battery level
-  double _currentTemperature = 25.0; // Default temperature
+  double _batteryLevel = 15.0; // Battery Level
+  double _currentTemperature = 25.0;
+  bool _isCharging = false; // Charging state
   late AnimationController _waveController;
+  Timer? _chargingTimer; // Timer to handle battery increase
 
   @override
   void initState() {
@@ -24,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _waveController.dispose();
+    _chargingTimer?.cancel(); // Stop charging when screen is closed
     super.dispose();
   }
 
@@ -39,10 +43,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _toggleCharging() {
+    setState(() {
+      _isCharging = !_isCharging;
+    });
+
+    if (_isCharging) {
+      _startCharging();
+    } else {
+      _stopCharging();
+    }
+  }
+
+  void _startCharging() {
+    _chargingTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_batteryLevel >= 100) {
+        _stopCharging();
+      } else {
+        setState(() {
+          _batteryLevel += 2; // Battery increases by 2% every second
+        });
+      }
+    });
+  }
+
+  void _stopCharging() {
+    _chargingTimer?.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Set background to black
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text('HydraX'),
+        backgroundColor: Colors.greenAccent,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -56,60 +103,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             SizedBox(height: 20),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                // Battery Shape (Bottle shape)
-                Container(
-                  width: 120,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(
-                      color: _batteryLevel < 20 ? Colors.redAccent : Colors.greenAccent,
-                      width: 4,
-                    ),
-                  ),
-                ),
-                // Animated Battery Level (Wave)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(50),
-                  child: AnimatedBuilder(
-                    animation: _waveController,
-                    builder: (context, child) {
-                      return CustomPaint(
-                        painter: BatteryPainter(
-                          waveOffset: _waveController.value,
-                          batteryLevel: _batteryLevel,
-                        ),
-                        child: Container(
-                          width: 120,
-                          height: 300,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                // Battery Percentage Text
-                Text(
-                  '${_batteryLevel.toInt()}%',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+
+            // 🔋 Battery Status Widget (With Charging Animation)
+            BatteryStatus(
+              batteryLevel: _batteryLevel,
+              isCharging: _isCharging,
+              waveController: _waveController,
             ),
+
+            SizedBox(height: 10),
+
+            // Toggle Charging Button
+            ElevatedButton(
+              onPressed: _toggleCharging,
+              child: Text(_isCharging ? "Stop Charging" : "Start Charging"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+              ),
+            ),
+
             SizedBox(height: 20),
-            // Temperature Display
             Text(
               'Temperature: ${_currentTemperature.toStringAsFixed(1)}°C',
               style: TextStyle(fontSize: 20, color: Colors.white),
             ),
             SizedBox(height: 10),
-            // Temperature Control Buttons
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -128,38 +148,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
   }
-}
-
-// Battery Wave Animation Painter
-class BatteryPainter extends CustomPainter {
-  final double waveOffset;
-  final double batteryLevel;
-
-  BatteryPainter({required this.waveOffset, required this.batteryLevel});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Change wave color based on battery level
-    Color waveColor = batteryLevel < 20 ? Colors.redAccent : Colors.greenAccent;
-
-    Paint wavePaint = Paint()
-      ..color = waveColor
-      ..style = PaintingStyle.fill;
-
-    double batteryHeight = (1 - (batteryLevel / 100)) * size.height;
-
-    Path wavePath = Path();
-    for (double i = 0; i <= size.width; i++) {
-      double waveHeight = sin((i / size.width * 2 * pi) + (waveOffset * 2 * pi)) * 10;
-      wavePath.lineTo(i, batteryHeight + waveHeight);
-    }
-    wavePath.lineTo(size.width, size.height);
-    wavePath.lineTo(0, size.height);
-    wavePath.close();
-
-    canvas.drawPath(wavePath, wavePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
