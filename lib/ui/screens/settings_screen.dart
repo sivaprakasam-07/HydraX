@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
 import '../widgets/temperature_control.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -23,11 +25,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black, // Dark theme background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Settings'),
-        backgroundColor: Colors.greenAccent, // Themed color
+        title: Text(
+          'Settings',
+          style: Theme.of(context).textTheme.headlineSmall, // Ensure text color adapts to theme
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -36,7 +43,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text(
               'Adjust Temperature',
-              style: TextStyle(fontSize: 18, color: Colors.white),
+              style: Theme.of(context).textTheme.titleLarge, // Ensure text color adapts to theme
             ),
             SizedBox(height: 10),
             TemperatureControl(
@@ -45,11 +52,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onDecrease: _decreaseTemperature,
             ),
             SizedBox(height: 20),
-            Divider(color: Colors.white54),
+            Divider(color: Colors.grey),
             SizedBox(height: 10),
-            Text(
-              'More Settings Coming Soon...',
-              style: TextStyle(fontSize: 16, color: Colors.white54),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.wb_sunny, color: Colors.yellow),
+                Switch(
+                  value: themeProvider.isDarkMode,
+                  onChanged: (value) {
+                    themeProvider.toggleTheme();
+                  },
+                ),
+                Icon(Icons.nightlight_round, color: Colors.blue),
+              ],
             ),
           ],
         ),

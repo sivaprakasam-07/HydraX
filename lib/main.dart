@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
 import 'ui/screens/home_screen.dart';
-import 'ui/screens/settings_screen.dart';
-import './ui/widgets/temperature_control.dart';
-
 
 void main() {
-  runApp(HydraXApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
-class HydraXApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false, // Disable debug banner
+          theme: themeProvider.themeData,
+          home: HomeScreen(),
+        );
+      },
     );
   }
 }

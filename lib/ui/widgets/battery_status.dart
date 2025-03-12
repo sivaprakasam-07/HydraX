@@ -5,11 +5,13 @@ class BatteryStatus extends StatefulWidget {
   final double batteryLevel;
   final bool isCharging;
   final AnimationController waveController;
+  final Color textColor; // Add this line
 
   BatteryStatus({
     required this.batteryLevel,
     required this.isCharging,
     required this.waveController,
+    required this.textColor, // Add this line
   });
 
   @override
@@ -101,7 +103,7 @@ class _BatteryStatusState extends State<BatteryStatus>
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: widget.textColor, // Use the textColor here
           ),
         ),
 

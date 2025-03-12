@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/battery_status.dart';
+import '../widgets/hydration_chart.dart';
 import 'settings_screen.dart';
 import 'bluetooth_screen.dart';
 import '../../services/bluetooth_service.dart';
+import '../../providers/theme_provider.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -19,9 +22,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isBluetoothConnected = false;
   late AnimationController _waveController;
   Timer? _chargingTimer;
-  Timer? _bluetoothReconnectTimer; // 🔥 Auto-reconnect Timer
+  Timer? _bluetoothReconnectTimer;
 
-  int _selectedIndex = 0; // For bottom navigation
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -31,14 +34,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: Duration(seconds: 2),
     )..repeat(reverse: true);
 
-    _connectAndMonitorBluetooth(); // 🔵 Start Bluetooth Connection
+    _connectAndMonitorBluetooth();
   }
 
   @override
   void dispose() {
     _waveController.dispose();
     _chargingTimer?.cancel();
-    _bluetoothReconnectTimer?.cancel(); // Stop auto-reconnect timer
+    _bluetoothReconnectTimer?.cancel();
     super.dispose();
   }
 
@@ -86,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  // ✅ Auto-connect & monitor Bluetooth stability
   Future<void> _connectAndMonitorBluetooth() async {
     var devices = await _bluetoothService.scanForDevices();
     if (devices.isNotEmpty) {
@@ -96,16 +98,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
 
       if (isConnected) {
-        _updateBluetoothData(); // Start receiving data
+        _updateBluetoothData();
       } else {
-        _scheduleReconnect(); // 🔥 If not connected, schedule a retry
+        _scheduleReconnect();
       }
     } else {
-      _scheduleReconnect(); // 🔥 Retry if no devices found
+      _scheduleReconnect();
     }
   }
 
-  // ✅ Keep receiving temperature & battery data
   Future<void> _updateBluetoothData() async {
     while (_isBluetoothConnected) {
       double? temp = await _bluetoothService.readTemperature();
@@ -116,23 +117,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (battery != null) _batteryLevel = battery.toDouble();
       });
 
-      await Future.delayed(Duration(seconds: 3)); // Fetch new data every 3 sec
+      await Future.delayed(Duration(seconds: 3));
 
-      // 🔥 Check if still connected
       bool stillConnected = await _bluetoothService.isConnected();
       if (!stillConnected) {
         setState(() {
           _isBluetoothConnected = false;
         });
-        _scheduleReconnect(); // 🔥 Auto-reconnect if lost
+        _scheduleReconnect();
         break;
       }
     }
   }
 
-  // 🔥 Auto-reconnect mechanism (tries every 5 sec)
   void _scheduleReconnect() {
-    _bluetoothReconnectTimer?.cancel(); // Stop previous timer
+    _bluetoothReconnectTimer?.cancel();
     _bluetoothReconnectTimer = Timer(Duration(seconds: 5), () {
       if (!_isBluetoothConnected) {
         print("🔄 Reconnecting to Bluetooth...");
@@ -145,30 +144,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() {
       _selectedIndex = index;
     });
-
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => BluetoothScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SettingsScreen()),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context);
+    bool isDarkMode = themeProvider.isDarkMode;
+
+    List<Widget> _screens = [
+      _buildHomeScreen(),
+      BluetoothScreen(),
+      SettingsScreen(),
+      HydrationChart(),
+    ];
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('HydraX'),
-        backgroundColor: Colors.greenAccent,
+        title: Text(
+          'HydraX',
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
+            icon: Icon(Icons.settings, color: isDarkMode ? Colors.white : Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
@@ -176,74 +176,95 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
           ),
+          Switch(
+            value: isDarkMode,
+            onChanged: (value) {
+              themeProvider.toggleTheme();
+            },
+          ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'HydraX',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 20),
+      body: _screens[_selectedIndex],
 
-            BatteryStatus(
-              batteryLevel: _batteryLevel,
-              isCharging: _isCharging,
-              waveController: _waveController,
-            ),
-
-            SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: _toggleCharging,
-              child: Text(_isCharging ? "Stop Charging" : "Start Charging"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-              ),
-            ),
-
-            SizedBox(height: 20),
-            Text(
-              'Temperature: ${_currentTemperature.toStringAsFixed(1)}°C',
-              style: TextStyle(fontSize: 20, color: Colors.white),
-            ),
-            SizedBox(height: 10),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.remove, size: 30, color: Colors.white),
-                  onPressed: _decreaseTemperature,
-                ),
-                IconButton(
-                  icon: Icon(Icons.add, size: 30, color: Colors.white),
-                  onPressed: _increaseTemperature,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-
-      // 📌 Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.greenAccent,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.black,
+        backgroundColor: Theme.of(context).primaryColor,
+        selectedItemColor: isDarkMode ? Colors.cyanAccent : Colors.blueAccent,
+        unselectedItemColor: isDarkMode ? Colors.grey : Colors.black,
         currentIndex: _selectedIndex,
         onTap: _onNavBarTapped,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.bluetooth), label: "Bluetooth"),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Hydration"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeScreen() {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'HydraX',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+          ),
+          SizedBox(height: 20),
+          BatteryStatus(
+            batteryLevel: _batteryLevel,
+            isCharging: _isCharging,
+            waveController: _waveController,
+            textColor: isDarkMode ? Colors.white : Colors.black, // ✅ Battery % Fix
+          ),
+          SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: _toggleCharging,
+            child: Text(_isCharging ? "Stop Charging" : "Start Charging"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDarkMode ? Colors.grey[700] : Colors.blueAccent,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          SizedBox(height: 20),
+          Text(
+            'Temperature: ${_currentTemperature.toStringAsFixed(1)}°C',
+            style: TextStyle(
+              fontSize: 20,
+              color: isDarkMode ? Colors.white70 : Colors.black,
+            ),
+          ),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: Icon(Icons.remove, size: 30, color: isDarkMode ? Colors.white70 : Colors.black),
+                onPressed: _decreaseTemperature,
+              ),
+              IconButton(
+                icon: Icon(Icons.add, size: 30, color: isDarkMode ? Colors.white70 : Colors.black),
+                onPressed: _increaseTemperature,
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _connectAndMonitorBluetooth,
+            child: Text("Connect Bluetooth"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDarkMode ? Colors.tealAccent[700] : Colors.greenAccent,
+              foregroundColor: isDarkMode ? Colors.black : Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+          ),
         ],
       ),
     );
