@@ -128,7 +128,9 @@ class _BatteryStatusState extends State<BatteryStatus>
 
   Color _getBorderColor() {
     if (widget.isCharging) return Colors.blueAccent;
-    return widget.batteryLevel < 20 ? Colors.redAccent : Colors.greenAccent;
+    if (widget.batteryLevel < 20) return Colors.redAccent;
+    if (widget.batteryLevel >= 40 && widget.batteryLevel <= 60) return Colors.orangeAccent;
+    return Colors.greenAccent;
   }
 }
 
@@ -141,7 +143,13 @@ class BatteryPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Color waveColor = isCharging ? Colors.blueAccent : (batteryLevel < 20 ? Colors.redAccent : Colors.greenAccent);
+    Color waveColor = isCharging 
+        ? Colors.blueAccent 
+        : (batteryLevel < 20 
+            ? Colors.redAccent 
+            : (batteryLevel >= 40 && batteryLevel <= 60 
+                ? Colors.orangeAccent 
+                : Colors.greenAccent));
 
     Paint wavePaint = Paint()
       ..color = waveColor

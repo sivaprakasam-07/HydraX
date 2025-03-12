@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart'; // For Bluetooth
 import '../widgets/battery_status.dart';
 import 'settings_screen.dart';
+import 'bluetooth_screen.dart'; // Import Bluetooth screen
 import 'dart:async'; // Needed for auto battery charging
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   double _batteryLevel = 15.0; // Battery Level
   double _currentTemperature = 25.0;
   bool _isCharging = false; // Charging state
+  bool _isBluetoothConnected = false; // Bluetooth connection status
   late AnimationController _waveController;
   Timer? _chargingTimer; // Timer to handle battery increase
 
@@ -62,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else {
         setState(() {
           _batteryLevel += 2; // Battery increases by 2% every second
+          if (_batteryLevel > 100) _batteryLevel = 100; // Prevents overflow
         });
       }
     });
@@ -69,6 +73,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _stopCharging() {
     _chargingTimer?.cancel();
+    setState(() {
+      _isCharging = false;
+    });
+  }
+
+  Future<void> _connectBluetooth() async {
+    final selectedDevice = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BluetoothScreen()),
+    );
+
+    if (selectedDevice != null) {
+      setState(() {
+        _isBluetoothConnected = true;
+      });
+    }
   }
 
   @override
@@ -119,6 +139,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Text(_isCharging ? "Stop Charging" : "Start Charging"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+              ),
+            ),
+
+            SizedBox(height: 10),
+
+            // 🔵 Bluetooth Connection Button
+            ElevatedButton(
+              onPressed: _connectBluetooth,
+              child: Text(_isBluetoothConnected ? "Bluetooth: Connected" : "Connect Bluetooth"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isBluetoothConnected ? Colors.green : Colors.blueAccent,
                 foregroundColor: Colors.white,
               ),
             ),

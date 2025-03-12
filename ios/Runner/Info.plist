@@ -45,5 +45,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>HydraX needs Bluetooth to connect to your smart bottle.</string>
+
 </dict>
 </plist>
