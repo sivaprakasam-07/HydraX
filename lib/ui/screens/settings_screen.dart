@@ -25,16 +25,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     var themeProvider = Provider.of<ThemeProvider>(context);
+    bool isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Settings',
-          style: Theme.of(context).textTheme.headlineSmall, // Ensure text color adapts to theme
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onPrimary, // Ensures visibility in both themes
+          ),
         ),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: theme.primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -43,7 +49,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text(
               'Adjust Temperature',
-              style: Theme.of(context).textTheme.titleLarge, // Ensure text color adapts to theme
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onBackground, // Fixes visibility issue
+              ),
             ),
             SizedBox(height: 10),
             TemperatureControl(
@@ -52,19 +62,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onDecrease: _decreaseTemperature,
             ),
             SizedBox(height: 20),
-            Divider(color: Colors.grey),
+            Divider(color: theme.dividerColor), // Adapts to theme
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.wb_sunny, color: Colors.yellow),
+                Icon(Icons.wb_sunny, color: isDarkMode ? Colors.grey[400] : Colors.orange),
                 Switch(
                   value: themeProvider.isDarkMode,
+                  activeColor: Colors.blue, // Ensures visibility
+                  inactiveTrackColor: Colors.grey[300],
                   onChanged: (value) {
                     themeProvider.toggleTheme();
                   },
                 ),
-                Icon(Icons.nightlight_round, color: Colors.blue),
+                Icon(Icons.nightlight_round, color: isDarkMode ? Colors.yellow[300] : Colors.blue),
               ],
             ),
           ],
