@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart'; // For Bluetooth
 import '../widgets/battery_status.dart';
 import 'settings_screen.dart';
-import 'bluetooth_screen.dart'; // Import Bluetooth screen
-import 'dart:async'; // Needed for auto battery charging
+import 'bluetooth_screen.dart';
+import '../../services/bluetooth_service.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,12 +11,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  double _batteryLevel = 15.0; // Battery Level
+  final MyBluetoothService _bluetoothService = MyBluetoothService();
+
+  double _batteryLevel = 15.0;
   double _currentTemperature = 25.0;
-  bool _isCharging = false; // Charging state
-  bool _isBluetoothConnected = false; // Bluetooth connection status
+  bool _isCharging = false;
+  bool _isBluetoothConnected = false;
   late AnimationController _waveController;
-  Timer? _chargingTimer; // Timer to handle battery increase
+  Timer? _chargingTimer;
+  Timer? _bluetoothReconnectTimer; // 🔥 Auto-reconnect Timer
+
+  int _selectedIndex = 0; // For bottom navigation
 
   @override
   void initState() {
@@ -25,12 +30,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: Duration(seconds: 2),
     )..repeat(reverse: true);
+
+    _connectAndMonitorBluetooth(); // 🔵 Start Bluetooth Connection
   }
 
   @override
   void dispose() {
     _waveController.dispose();
-    _chargingTimer?.cancel(); // Stop charging when screen is closed
+    _chargingTimer?.cancel();
+    _bluetoothReconnectTimer?.cancel(); // Stop auto-reconnect timer
     super.dispose();
   }
 
@@ -64,8 +72,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _stopCharging();
       } else {
         setState(() {
-          _batteryLevel += 2; // Battery increases by 2% every second
-          if (_batteryLevel > 100) _batteryLevel = 100; // Prevents overflow
+          _batteryLevel += 2;
+          if (_batteryLevel > 100) _batteryLevel = 100;
         });
       }
     });
@@ -78,16 +86,76 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  Future<void> _connectBluetooth() async {
-    final selectedDevice = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => BluetoothScreen()),
-    );
-
-    if (selectedDevice != null) {
+  // ✅ Auto-connect & monitor Bluetooth stability
+  Future<void> _connectAndMonitorBluetooth() async {
+    var devices = await _bluetoothService.scanForDevices();
+    if (devices.isNotEmpty) {
+      bool isConnected = await _bluetoothService.connectToDevice(devices[0]);
       setState(() {
-        _isBluetoothConnected = true;
+        _isBluetoothConnected = isConnected;
       });
+
+      if (isConnected) {
+        _updateBluetoothData(); // Start receiving data
+      } else {
+        _scheduleReconnect(); // 🔥 If not connected, schedule a retry
+      }
+    } else {
+      _scheduleReconnect(); // 🔥 Retry if no devices found
+    }
+  }
+
+  // ✅ Keep receiving temperature & battery data
+  Future<void> _updateBluetoothData() async {
+    while (_isBluetoothConnected) {
+      double? temp = await _bluetoothService.readTemperature();
+      int? battery = await _bluetoothService.readBatteryLevel();
+
+      setState(() {
+        if (temp != null) _currentTemperature = temp;
+        if (battery != null) _batteryLevel = battery.toDouble();
+      });
+
+      await Future.delayed(Duration(seconds: 3)); // Fetch new data every 3 sec
+
+      // 🔥 Check if still connected
+      bool stillConnected = await _bluetoothService.isConnected();
+      if (!stillConnected) {
+        setState(() {
+          _isBluetoothConnected = false;
+        });
+        _scheduleReconnect(); // 🔥 Auto-reconnect if lost
+        break;
+      }
+    }
+  }
+
+  // 🔥 Auto-reconnect mechanism (tries every 5 sec)
+  void _scheduleReconnect() {
+    _bluetoothReconnectTimer?.cancel(); // Stop previous timer
+    _bluetoothReconnectTimer = Timer(Duration(seconds: 5), () {
+      if (!_isBluetoothConnected) {
+        print("🔄 Reconnecting to Bluetooth...");
+        _connectAndMonitorBluetooth();
+      }
+    });
+  }
+
+  void _onNavBarTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BluetoothScreen()),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SettingsScreen()),
+      );
     }
   }
 
@@ -124,7 +192,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             SizedBox(height: 20),
 
-            // 🔋 Battery Status Widget (With Charging Animation)
             BatteryStatus(
               batteryLevel: _batteryLevel,
               isCharging: _isCharging,
@@ -133,24 +200,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
             SizedBox(height: 10),
 
-            // Toggle Charging Button
             ElevatedButton(
               onPressed: _toggleCharging,
               child: Text(_isCharging ? "Stop Charging" : "Start Charging"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-              ),
-            ),
-
-            SizedBox(height: 10),
-
-            // 🔵 Bluetooth Connection Button
-            ElevatedButton(
-              onPressed: _connectBluetooth,
-              child: Text(_isBluetoothConnected ? "Bluetooth: Connected" : "Connect Bluetooth"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isBluetoothConnected ? Colors.green : Colors.blueAccent,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -177,6 +231,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
+      ),
+
+      // 📌 Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.greenAccent,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black,
+        currentIndex: _selectedIndex,
+        onTap: _onNavBarTapped,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.bluetooth), label: "Bluetooth"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+        ],
       ),
     );
   }
