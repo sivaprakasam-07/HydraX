@@ -30,7 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
         title: Text(
           'Settings',
@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: theme.colorScheme.onPrimary, // Ensures visibility in both themes
           ),
         ),
-        backgroundColor: theme.primaryColor,
+        backgroundColor: theme.colorScheme.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -56,13 +56,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             SizedBox(height: 10),
+            // Temperature Display Fix
+            Text(
+              'Temperature: ${_selectedTemperature.toStringAsFixed(1)}°C',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onBackground, // Ensures visibility
+              ),
+            ),
+            SizedBox(height: 10),
             TemperatureControl(
               temperature: _selectedTemperature,
               onIncrease: _increaseTemperature,
               onDecrease: _decreaseTemperature,
+              textColor: theme.colorScheme.onBackground, // Pass adaptive color
             ),
             SizedBox(height: 20),
-            Divider(color: theme.dividerColor), // Adapts to theme
+            Divider(color: theme.colorScheme.onBackground.withOpacity(0.5)), // Adapts to theme
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -70,8 +81,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Icon(Icons.wb_sunny, color: isDarkMode ? Colors.grey[400] : Colors.orange),
                 Switch(
                   value: themeProvider.isDarkMode,
-                  activeColor: Colors.blue, // Ensures visibility
-                  inactiveTrackColor: Colors.grey[300],
+                  activeColor: theme.colorScheme.primary,
+                  inactiveTrackColor: isDarkMode ? Colors.grey[700] : Colors.grey[500], // Fix contrast
                   onChanged: (value) {
                     themeProvider.toggleTheme();
                   },
