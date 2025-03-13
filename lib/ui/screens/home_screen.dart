@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/battery_status.dart';
 import '../widgets/hydration_chart.dart';
+import '../widgets/water_bottle.dart'; // ✅ Added WaterBottle widget
 import 'settings_screen.dart';
-import 'bluetooth_screen.dart';
 import '../../services/bluetooth_service.dart';
 import '../../providers/theme_provider.dart';
 import 'dart:async';
@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   double _currentTemperature = 25.0;
   bool _isCharging = false;
   bool _isBluetoothConnected = false;
+  double _waterFillLevel = 0.5; // Initial water fill level (50%)
   late AnimationController _waveController;
   Timer? _chargingTimer;
   Timer? _bluetoothReconnectTimer;
@@ -153,9 +154,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     List<Widget> _screens = [
       _buildHomeScreen(),
-      BluetoothScreen(),
+      HydrationChart(),  // ✅ Analysis Widget remains
+      WaterBottle(fillPercentage: _waterFillLevel),  // ✅ Water Bottle Widget added
       SettingsScreen(),
-      HydrationChart(),
     ];
 
     return Scaffold(
@@ -194,9 +195,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         onTap: _onNavBarTapped,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.bluetooth), label: "Bluetooth"),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Analysis"),  // ✅ Analysis remains
+          BottomNavigationBarItem(icon: Icon(Icons.local_drink), label: "Hydration"),  // ✅ Water Bottle added
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Hydration"),
         ],
       ),
     );
@@ -222,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             batteryLevel: _batteryLevel,
             isCharging: _isCharging,
             waveController: _waveController,
-            textColor: isDarkMode ? Colors.white : Colors.black, // ✅ Battery % Fix
+            textColor: isDarkMode ? Colors.white : Colors.black,
           ),
           SizedBox(height: 10),
           ElevatedButton(
@@ -256,15 +257,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ],
           ),
           SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _connectAndMonitorBluetooth,
-            child: Text("Connect Bluetooth"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDarkMode ? Colors.tealAccent[700] : Colors.greenAccent,
-              foregroundColor: isDarkMode ? Colors.black : Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+
+          // 🔹 "Connect Bluetooth" Button (Appears only when not connected)
+          if (!_isBluetoothConnected)
+            ElevatedButton(
+              onPressed: _connectAndMonitorBluetooth,
+              child: Text("Connect Bluetooth"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
             ),
-          ),
         ],
       ),
     );
