@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "611396213310",
+    "project_id": "hydrax-23",
+    "storage_bucket": "hydrax-23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:611396213310:android:e7dcd5eedc852ff3bfcf6f",
+        "android_client_info": {
+          "package_name": "com.example.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDouR6K6gPhZtjw7wFtT8auyLK4zeihBB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:611396213310:android:b0f637ee30fe5e7bbfcf6f",
+        "android_client_info": {
+          "package_name": "com.example.hydrax"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDouR6K6gPhZtjw7wFtT8auyLK4zeihBB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
