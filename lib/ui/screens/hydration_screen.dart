@@ -1,37 +1,80 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class HydrationChart extends StatelessWidget {
-  final List<double> hydrationData; // Example: Daily water intake in ml
+class HydrationScreen extends StatefulWidget {
+  @override
+  _HydrationScreenState createState() => _HydrationScreenState();
+}
 
-  HydrationChart({this.hydrationData = const [500, 750, 1000, 800, 1200, 900, 1100]});
+class _HydrationScreenState extends State<HydrationScreen> {
+  List<double> hydrationData = [500, 750, 1000, 800, 1200, 900, 1100];
+
+  void _updateChartData() {
+    setState(() {
+      hydrationData = List.from(hydrationData); // Create a new instance of the data
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Hydration Tracker'),
+      ),
+      body: Center(
+        child: HydrationChart(
+          key: UniqueKey(), // Assign a unique key to force rebuild
+          hydrationData: hydrationData,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _updateChartData,
+        child: Icon(Icons.refresh),
+      ),
+    );
+  }
+}
+
+class HydrationChart extends StatelessWidget {
+  final List<double> hydrationData;
+
+  HydrationChart({
+    Key? key,
+    this.hydrationData = const [500, 750, 1000, 800, 1200, 900, 1100],
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
-      height: 250,
+      height: 300,
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [Colors.blueAccent.withOpacity(0.2), Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            blurRadius: 6,
-            spreadRadius: 2,
+            blurRadius: 8,
+            spreadRadius: 3,
           ),
         ],
       ),
       child: LineChart(
         LineChartData(
-          backgroundColor: theme.scaffoldBackgroundColor,
+          minY: 0,
+          maxY: 1500, // Adjust max value dynamically if needed
+          backgroundColor: Colors.transparent,
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: Colors.grey.withOpacity(0.3),
+              color: Colors.grey.withOpacity(0.2),
               strokeWidth: 1,
             ),
           ),
@@ -39,11 +82,14 @@ class HydrationChart extends StatelessWidget {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 40,
+                reservedSize: 50,
                 getTitlesWidget: (value, meta) {
-                  return Text(
-                    '${value.toInt()} ml',
-                    style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Text(
+                      '${value.toInt()} ml',
+                      style: TextStyle(fontSize: 12, color: theme.primaryColorDark),
+                    ),
                   );
                 },
               ),
@@ -55,9 +101,12 @@ class HydrationChart extends StatelessWidget {
                 getTitlesWidget: (value, meta) {
                   List<String> days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
                   if (value.toInt() >= 0 && value.toInt() < days.length) {
-                    return Text(
-                      days[value.toInt()],
-                      style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        days[value.toInt()],
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.primaryColorDark),
+                      ),
                     );
                   }
                   return SizedBox();
@@ -65,9 +114,7 @@ class HydrationChart extends StatelessWidget {
               ),
             ),
           ),
-          borderData: FlBorderData(
-            border: Border.all(color: Colors.grey.withOpacity(0.5)),
-          ),
+          borderData: FlBorderData(show: false),
           lineBarsData: [
             LineChartBarData(
               spots: List.generate(
@@ -76,11 +123,10 @@ class HydrationChart extends StatelessWidget {
               ),
               isCurved: true,
               color: Colors.blueAccent,
-              barWidth: 3,
+              barWidth: 4,
               isStrokeCapRound: true,
               belowBarData: BarAreaData(
                 show: true,
-                color: Colors.blueAccent.withOpacity(0.3),
                 gradient: LinearGradient(
                   colors: [
                     Colors.blueAccent.withOpacity(0.3),
@@ -90,9 +136,43 @@ class HydrationChart extends StatelessWidget {
                   end: Alignment.bottomCenter,
                 ),
               ),
-              dotData: FlDotData(show: false),
+              dotData: FlDotData(
+                show: true,
+                checkToShowDot: (spot, _) => true,
+                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 6,
+                  color: Colors.blueAccent,
+                  strokeWidth: 2,
+                  strokeColor: Colors.white,
+                ),
+              ),
             ),
           ],
+          extraLinesData: ExtraLinesData(
+            horizontalLines: [
+              HorizontalLine(
+                y: 1000,
+                color: Colors.redAccent,
+                strokeWidth: 2,
+                dashArray: [5, 5],
+              ),
+            ],
+          ),
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              tooltipBgColor: Colors.blueAccent.withOpacity(0.8),
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) {
+                  return LineTooltipItem(
+                    '${spot.y.toInt()} ml',
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  );
+                }).toList();
+              },
+            ),
+            touchCallback: (FlTouchEvent event, LineTouchResponse? response) {},
+            handleBuiltInTouches: true,
+          ),
         ),
       ),
     );

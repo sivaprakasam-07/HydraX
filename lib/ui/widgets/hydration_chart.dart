@@ -1,71 +1,284 @@
+// import 'package:fl_chart/fl_chart.dart';
+// import 'package:flutter/material.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+
+// class HydrationChart extends StatefulWidget {
+//   @override
+//   _HydrationChartState createState() => _HydrationChartState();
+// }
+
+// class _HydrationChartState extends State<HydrationChart> {
+//   List<BarChartGroupData> barData = [];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     fetchHydrationData();
+//   }
+
+//   Future<void> fetchHydrationData() async {
+//     try {
+//       final snapshot = await FirebaseFirestore.instance
+//           .collection('hydration')
+//           .orderBy('day')
+//           .get();
+
+//       List<BarChartGroupData> bars = [];
+//       for (var doc in snapshot.docs) {
+//         int day = doc['day']; // Fetch day
+//         double litres = doc['litres']; // Fetch litres
+
+//         bars.add(
+//           BarChartGroupData(
+//             x: day,
+//             barRods: [
+//               BarChartRodData(
+//                 toY: litres,
+//                 width: 18,
+//                 gradient: LinearGradient(
+//                   colors: [Colors.blue, Colors.cyan], // Gradient effect
+//                 ),
+//                 borderRadius: BorderRadius.circular(6),
+//                 backDrawRodData: BackgroundBarChartRodData(
+//                   show: true,
+//                   toY: 5,
+//                   color: Colors.grey.withOpacity(0.2), // Max level indicator
+//                 ),
+//               ),
+//             ],
+//           ),
+//         );
+//       }
+
+//       setState(() {
+//         barData = bars;
+//       });
+//     } catch (e) {
+//       print("Error fetching hydration data: $e");
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+//     return Container(
+//       padding: EdgeInsets.all(16),
+//       decoration: BoxDecoration(
+//         color: isDarkMode ? Colors.black : Colors.white,
+//         borderRadius: BorderRadius.circular(16),
+//         boxShadow: [
+//           if (!isDarkMode)
+//             BoxShadow(
+//               color: Colors.grey.withOpacity(0.2),
+//               blurRadius: 10,
+//               spreadRadius: 2,
+//             ),
+//         ],
+//       ),
+//       child: Column(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           SizedBox(height: 10),
+//           AspectRatio(
+//             aspectRatio: 1.5,
+//             child: BarChart(
+//               BarChartData(
+//                 barGroups: barData,
+//                 borderData: FlBorderData(show: false),
+//                 gridData: FlGridData(show: false),
+//                 titlesData: FlTitlesData(
+//                   leftTitles: AxisTitles(
+//                     sideTitles: SideTitles(
+//                       showTitles: true,
+//                       reservedSize: 30,
+//                       getTitlesWidget: (value, meta) {
+//                         return Text(
+//                           "${value.toInt()}L",
+//                           style: TextStyle(
+//                             color: isDarkMode ? Colors.white : Colors.black,
+//                             fontSize: 12,
+//                           ),
+//                         );
+//                       },
+//                     ),
+//                   ),
+//                   bottomTitles: AxisTitles(
+//                     sideTitles: SideTitles(
+//                       showTitles: true,
+//                       reservedSize: 30,
+//                       getTitlesWidget: (value, meta) {
+//                         return Text(
+//                           "Day ${value.toInt()}",
+//                           style: TextStyle(
+//                             color: isDarkMode ? Colors.white : Colors.black,
+//                             fontSize: 12,
+//                           ),
+//                         );
+//                       },
+//                     ),
+//                   ),
+//                 ),
+//                 barTouchData: BarTouchData(
+//                   touchTooltipData: BarTouchTooltipData(
+//                     tooltipBgColor: Colors.blueAccent.withOpacity(0.8),
+//                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
+//                       return BarTooltipItem(
+//                         "${rod.toY.toStringAsFixed(1)}L",
+//                         TextStyle(color: Colors.white, fontSize: 14),
+//                       );
+//                     },
+//                   ),
+//                   touchCallback: (event, response) {},
+//                   handleBuiltInTouches: true,
+//                 ),
+//               ),
+//               swapAnimationDuration: Duration(milliseconds: 500),
+//               swapAnimationCurve: Curves.easeInOut, // Smooth animations
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class HydrationChart extends StatelessWidget {
-  final List<double> hydrationData; // Example: Daily water intake in ml
+class HydrationChart extends StatefulWidget {
+  @override
+  _HydrationChartState createState() => _HydrationChartState();
+}
 
-  HydrationChart({this.hydrationData = const [500, 750, 1000, 800, 1200, 900, 1100]});
+class _HydrationChartState extends State<HydrationChart> {
+  List<BarChartGroupData> barData = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadPlaceholderData(); // Using placeholder values for now
+  }
+
+  void loadPlaceholderData() {
+    List<BarChartGroupData> bars = [
+      BarChartGroupData(x: 1, barRods: [_buildRod(2.5)]),
+      BarChartGroupData(x: 2, barRods: [_buildRod(3.0)]),
+      BarChartGroupData(x: 3, barRods: [_buildRod(1.8)]),
+      BarChartGroupData(x: 4, barRods: [_buildRod(2.2)]),
+      BarChartGroupData(x: 5, barRods: [_buildRod(4.0)]),
+      BarChartGroupData(x: 6, barRods: [_buildRod(3.5)]),
+      BarChartGroupData(x: 7, barRods: [_buildRod(2.8)]),
+    ];
+
+    setState(() {
+      barData = bars;
+    });
+  }
+
+  BarChartRodData _buildRod(double litres) {
+    return BarChartRodData(
+      toY: litres,
+      width: 18,
+      gradient: LinearGradient(colors: [Colors.blue, Colors.cyan]),
+      borderRadius: BorderRadius.circular(6),
+      backDrawRodData: BackgroundBarChartRodData(
+        show: true,
+        toY: 5, // Max capacity is 5L
+        color: Colors.grey.withOpacity(0.2),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Adjust text color based on theme
-    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87;
-    Color borderColor = Theme.of(context).brightness == Brightness.dark ? Colors.white38 : Colors.black38;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      height: 250,
-      padding: EdgeInsets.all(10),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(10),
+        color: isDarkMode ? Colors.black : Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 5,
-            spreadRadius: 2,
-          ),
+          if (!isDarkMode)
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
         ],
       ),
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(show: false), // Hide grid lines
-          titlesData: FlTitlesData(
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: (value, meta) {
-                  return Text('${value.toInt()} ml',
-                      style: TextStyle(fontSize: 12, color: textColor)); // ✅ Dynamic Text Color
-                },
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  List<String> days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                  return Text(days[value.toInt()],
-                      style: TextStyle(fontSize: 12, color: textColor)); // ✅ Dynamic Text Color
-                },
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Hydration Trend",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: isDarkMode ? Colors.white : Colors.black,
             ),
           ),
-          borderData: FlBorderData(
-            border: Border.all(color: borderColor), // ✅ Dynamic Border Color
-          ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: List.generate(
-                  hydrationData.length, (index) => FlSpot(index.toDouble(), hydrationData[index])),
-              isCurved: true,
-              color: Colors.blueAccent,
-              dotData: FlDotData(show: false),
-              belowBarData: BarAreaData(show: true, color: Colors.blueAccent.withOpacity(0.3)),
+          SizedBox(height: 10),
+          AspectRatio(
+            aspectRatio: 1.5,
+            child: BarChart(
+              BarChartData(
+                barGroups: barData,
+                borderData: FlBorderData(show: false),
+                gridData: FlGridData(show: false),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          "${value.toInt()}L",
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          "Day ${value.toInt()}",
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    tooltipBgColor: Colors.blueAccent.withOpacity(0.8),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        "${rod.toY.toStringAsFixed(1)}L",
+                        TextStyle(color: Colors.white, fontSize: 14),
+                      );
+                    },
+                  ),
+                  touchCallback: (event, response) {},
+                  handleBuiltInTouches: true,
+                ),
+              ),
+              swapAnimationDuration: Duration(milliseconds: 500),
+              swapAnimationCurve: Curves.easeInOut,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
+
