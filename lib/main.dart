@@ -18,9 +18,9 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         return MaterialApp(
-          debugShowCheckedModeBanner: false, // Disable debug banner
+          debugShowCheckedModeBanner: false,
           theme: themeProvider.themeData,
-          home: HomeScreen(),
+          home: HomeScreen(), // ✅ HomeScreen handles everything
         );
       },
     );

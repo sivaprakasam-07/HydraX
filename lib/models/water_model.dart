@@ -20,3 +20,26 @@ class WaterLog {
     );
   }
 }
+
+class TemperatureLog {
+  final int temperature; // Temperature in °C
+  final DateTime timestamp; // Time of measurement
+
+  TemperatureLog({required this.temperature, required this.timestamp});
+
+  // Convert to JSON for Firebase
+  Map<String, dynamic> toJson() {
+    return {
+      'temperature': temperature,
+      'timestamp': timestamp.toIso8601String(),
+    };
+  }
+
+  // Create from JSON
+  factory TemperatureLog.fromJson(Map<String, dynamic> json) {
+    return TemperatureLog(
+      temperature: json['temperature'],
+      timestamp: DateTime.parse(json['timestamp']),
+    );
+  }
+}

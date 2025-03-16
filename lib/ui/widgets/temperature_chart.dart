@@ -1,45 +1,52 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class HydrationChart extends StatefulWidget {
+class TemperatureChart extends StatefulWidget {
+  final List<double> temperatureValues;
+  final List<double> maxTemperatureValues; // ✅ For Gray Background Rods
+
+  TemperatureChart({
+    required this.temperatureValues,
+    required this.maxTemperatureValues,
+  });
+
   @override
-  _HydrationChartState createState() => _HydrationChartState();
+  _TemperatureChartState createState() => _TemperatureChartState();
 }
 
-class _HydrationChartState extends State<HydrationChart> {
+class _TemperatureChartState extends State<TemperatureChart> {
   List<BarChartGroupData> barData = [];
 
   @override
   void initState() {
     super.initState();
-    loadPlaceholderData(); // Using placeholder values for now
+    loadTemperatureData();
   }
 
-  void loadPlaceholderData() {
-    List<BarChartGroupData> bars = [
-      BarChartGroupData(x: 1, barRods: [_buildRod(2.5)]),
-      BarChartGroupData(x: 2, barRods: [_buildRod(3.0)]),
-      BarChartGroupData(x: 3, barRods: [_buildRod(1.8)]),
-      BarChartGroupData(x: 4, barRods: [_buildRod(2.2)]),
-      BarChartGroupData(x: 5, barRods: [_buildRod(4.0)]),
-      BarChartGroupData(x: 6, barRods: [_buildRod(3.5)]),
-      BarChartGroupData(x: 7, barRods: [_buildRod(2.8)]),
-    ];
+  void loadTemperatureData() {
+    List<BarChartGroupData> bars = List.generate(widget.temperatureValues.length, (index) {
+      return BarChartGroupData(
+        x: index + 1,
+        barRods: [
+          _buildRod(widget.temperatureValues[index]), // Actual Temperature (Blue)
+        ],
+      );
+    });
 
     setState(() {
       barData = bars;
     });
   }
 
-  BarChartRodData _buildRod(double litres) {
+  BarChartRodData _buildRod(double temperature) {
     return BarChartRodData(
-      toY: litres,
+      toY: temperature,
       width: 18,
-      gradient: LinearGradient(colors: [Colors.blue, Colors.cyan]),
+      gradient: LinearGradient(colors: [Colors.blue, Colors.cyan]), // ✅ Gradient Effect
       borderRadius: BorderRadius.circular(6),
       backDrawRodData: BackgroundBarChartRodData(
         show: true,
-        toY: 5, // Max capacity is 5L
+        toY: 50, // ✅ Max Temperature (50°C)
         color: Colors.grey.withOpacity(0.2),
       ),
     );
@@ -67,7 +74,7 @@ class _HydrationChartState extends State<HydrationChart> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            "Hydration Trend",
+            "Temperature Trend",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -89,7 +96,7 @@ class _HydrationChartState extends State<HydrationChart> {
                       reservedSize: 30,
                       getTitlesWidget: (value, meta) {
                         return Text(
-                          "${value.toInt()}L",
+                          "${value.toInt()}°C",
                           style: TextStyle(
                             color: isDarkMode ? Colors.white : Colors.black,
                             fontSize: 12,
@@ -119,7 +126,7 @@ class _HydrationChartState extends State<HydrationChart> {
                     tooltipBgColor: Colors.blueAccent.withOpacity(0.8),
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       return BarTooltipItem(
-                        "${rod.toY.toStringAsFixed(1)}L",
+                        "${rod.toY.toStringAsFixed(1)}°C",
                         TextStyle(color: Colors.white, fontSize: 14),
                       );
                     },
@@ -137,4 +144,3 @@ class _HydrationChartState extends State<HydrationChart> {
     );
   }
 }
-
