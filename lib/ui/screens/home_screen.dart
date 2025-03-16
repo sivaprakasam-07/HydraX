@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../widgets/battery_status.dart';
 import '../widgets/hydration_chart.dart';
 import '../widgets/water_bottle.dart';
-import '../widgets/temperature_chart.dart';
+import '../widgets/temperature_chart.dart'; // ✅ Temp Log Added
 import 'settings_screen.dart';
 import '../../services/bluetooth_service.dart';
 import '../../providers/theme_provider.dart';
@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final MyBluetoothService _bluetoothService = MyBluetoothService();
+  
   double _batteryLevel = 15.0;
   double _currentTemperature = 25.0;
   bool _isCharging = false;
@@ -44,27 +45,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _increaseTemperature() {
-    setState(() {
-      if (_currentTemperature < 50) _currentTemperature += 1; // Max 50°C
-    });
+  /// ✅ **Bluetooth Connection Handler**
+  Future<void> _handleBluetoothConnection() async {
+    if (_isBluetoothConnected) {
+      await _bluetoothService.disconnect();
+      setState(() {
+        _isBluetoothConnected = false;
+      });
+    } else {
+      bool success = await _bluetoothService.scanAndConnect();
+      if (success) {
+        setState(() {
+          _isBluetoothConnected = true;
+        });
+      }
+    }
   }
 
-  void _decreaseTemperature() {
-    setState(() {
-      if (_currentTemperature > 10) _currentTemperature -= 1; // Min 10°C
-    });
-  }
-
+  /// ✅ **Toggle Charging**
   void _toggleCharging() {
     setState(() {
       _isCharging = !_isCharging;
     });
   }
 
-  void _toggleBluetooth() {
+  /// ✅ **Increase/Decrease Temperature**
+  void _changeTemperature(bool increase) {
     setState(() {
-      _isBluetoothConnected = !_isBluetoothConnected;
+      if (increase) {
+        _currentTemperature += 1.0;
+      } else {
+        _currentTemperature -= 1.0;
+      }
     });
   }
 
@@ -83,8 +95,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       Padding(
         padding: EdgeInsets.all(10),
         child: TemperatureChart(
-          temperatureValues: [25, 24, 26, 23, 27, 22, 28], // Actual Temp (Blue Bars)
-          maxTemperatureValues: [30, 30, 30, 30, 30, 30, 30], // Max Temp (Gray Background)
+          temperatureValues: [25, 24, 26, 23, 27, 22, 28], // ✅ Fixed Data
+          maxTemperatureValues: [30, 30, 30, 30, 30, 30, 30], // ✅ Fixed Missing Argument
         ),
       ),
       SettingsScreen(),
@@ -132,6 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  /// ✅ **Updated Home Screen with Bluetooth & Temperature Controls**
   Widget _buildHomeScreen() {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Center(
@@ -151,43 +164,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           SizedBox(height: 20),
 
-          // Temperature Display & Controls
-          Text(
-            "Temperature: ${_currentTemperature.toInt()}°C",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.white : Colors.black),
+          /// ✅ **Bluetooth Button**
+          ElevatedButton.icon(
+            onPressed: _handleBluetoothConnection,
+            icon: Icon(_isBluetoothConnected ? Icons.bluetooth_disabled : Icons.bluetooth),
+            label: Text(_isBluetoothConnected ? "Disconnect Bluetooth" : "Connect Bluetooth"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _isBluetoothConnected ? Colors.red : Colors.blue,
+            ),
           ),
+
+          SizedBox(height: 20),
+
+          /// ✅ **Charging Button**
+          ElevatedButton.icon(
+            onPressed: _toggleCharging,
+            icon: Icon(_isCharging ? Icons.flash_off : Icons.flash_on),
+            label: Text(_isCharging ? "Stop Charging" : "Start Charging"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _isCharging ? Colors.orange : Colors.green,
+            ),
+          ),
+
+          SizedBox(height: 20),
+
+          /// ✅ **Temperature Controls**
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              /// **Decrease Temperature**
               IconButton(
-                icon: Icon(Icons.remove, color: Colors.red),
-                onPressed: _decreaseTemperature,
+                icon: Icon(Icons.remove_circle, color: Colors.blue, size: 32),
+                onPressed: () => _changeTemperature(false),
               ),
+
+              /// **Current Temperature Display**
+              Text(
+                "${_currentTemperature.toStringAsFixed(1)}°C",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.white : Colors.black),
+              ),
+
+              /// **Increase Temperature**
               IconButton(
-                icon: Icon(Icons.add, color: Colors.green),
-                onPressed: _increaseTemperature,
+                icon: Icon(Icons.add_circle, color: Colors.red, size: 32),
+                onPressed: () => _changeTemperature(true),
               ),
             ],
-          ),
-
-          // Charging & Bluetooth Buttons
-          SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: _toggleCharging,
-            icon: Icon(_isCharging ? Icons.bolt : Icons.power),
-            label: Text(_isCharging ? "Stop Charging" : "Start Charging"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isCharging ? Colors.orange : Colors.blue,
-            ),
-          ),
-          SizedBox(height: 10),
-          ElevatedButton.icon(
-            onPressed: _toggleBluetooth,
-            icon: Icon(_isBluetoothConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled),
-            label: Text(_isBluetoothConnected ? "Disconnect Bluetooth" : "Connect Bluetooth"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isBluetoothConnected ? Colors.green : Colors.grey,
-            ),
           ),
         ],
       ),
