@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/battery_status.dart';
 import '../widgets/hydration_chart.dart';
 import '../widgets/water_bottle.dart';
@@ -24,6 +25,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _waveController;
   int _selectedIndex = 0;
 
+  /// ✅ **User Adaptation Toggle State**
+  bool _userAdaptationEnabled = false;
+
   @override
   void initState() {
     super.initState();
@@ -31,12 +35,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: Duration(seconds: 2),
     )..repeat(reverse: true);
+
+    _loadUserAdaptationPreference(); // ✅ Load User Adaptation State on Start
   }
 
   @override
   void dispose() {
     _waveController.dispose();
     super.dispose();
+  }
+
+  /// ✅ **Load User Adaptation Preference**
+  Future<void> _loadUserAdaptationPreference() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool savedValue = prefs.getBool("userAdaptation") ?? false;
+    debugPrint("Loaded User Adaptation: $savedValue"); // ✅ Debug print
+    setState(() {
+      _userAdaptationEnabled = savedValue;
+    });
+  }
+
+  /// ✅ **Save User Adaptation Preference**
+  Future<void> _toggleUserAdaptation(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("userAdaptation", value);
+    debugPrint("Saved User Adaptation: $value"); // ✅ Debug print
+    setState(() {
+      _userAdaptationEnabled = value;
+    });
   }
 
   void _onNavBarTapped(int index) {
@@ -77,6 +103,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else {
         _currentTemperature -= 1.0;
       }
+    });
+  }
+
+  /// ✅ **Fix Temperature Function**
+  void _fixTemperature() {
+    setState(() {
+      _currentTemperature = 25.0; // Default Temperature Reset
     });
   }
 
@@ -144,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  /// ✅ **Updated Home Screen with Bluetooth & Temperature Controls**
+  /// ✅ **Updated Home Screen with Bluetooth & Temperature Controls + User Adaptation Toggle**
   Widget _buildHomeScreen() {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Center(
@@ -192,24 +225,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              /// **Decrease Temperature**
               IconButton(
                 icon: Icon(Icons.remove_circle, color: Colors.blue, size: 32),
                 onPressed: () => _changeTemperature(false),
               ),
-
-              /// **Current Temperature Display**
               Text(
                 "${_currentTemperature.toStringAsFixed(1)}°C",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.white : Colors.black),
               ),
-
-              /// **Increase Temperature**
               IconButton(
                 icon: Icon(Icons.add_circle, color: Colors.red, size: 32),
                 onPressed: () => _changeTemperature(true),
               ),
             ],
+          ),
+
+          SizedBox(height: 10),
+
+          /// ✅ **Fix Temperature Button**
+          ElevatedButton(
+            onPressed: _fixTemperature,
+            child: Text("Fix Temperature"),
+          ),
+
+          SizedBox(height: 30),
+
+          SwitchListTile(
+            title: Text("User Adaptation"),
+            value: _userAdaptationEnabled,
+            onChanged: (value) {
+              _toggleUserAdaptation(value);
+            },
           ),
         ],
       ),
