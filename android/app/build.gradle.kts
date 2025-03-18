@@ -3,6 +3,9 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+
+    // ✅ Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -42,3 +45,18 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // ✅ Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+
+    // ✅ Add Firebase SDKs you want to use
+    implementation("com.google.firebase:firebase-firestore-ktx") // Firestore
+    implementation("com.google.firebase:firebase-auth-ktx")      // Firebase Auth (Optional)
+    implementation("com.google.firebase:firebase-analytics-ktx") // Analytics (Optional)
+
+    // Add other dependencies here...
+}
+
+// ✅ Apply the Google services plugin at the end
+apply(plugin = "com.google.gms.google-services")
