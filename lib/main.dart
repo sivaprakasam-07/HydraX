@@ -1,11 +1,53 @@
+// import 'package:flutter/material.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
+// import 'ui/screens/home_screen.dart'; // ✅ Import your real HomeScreen
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+
+//   // ✅ Initialize Firebase with correct platform options
+//   try {
+//     await Firebase.initializeApp(
+//       options: DefaultFirebaseOptions.currentPlatform,
+//     );
+//     debugPrint('✅ Firebase initialized successfully!');
+//   } catch (e) {
+//     debugPrint('❌ Firebase initialization failed: $e');
+//   }
+
+//   runApp(const MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'HydraX',
+//       debugShowCheckedModeBanner: false,
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       // ✅ Load your real HomeScreen here
+//       home: HomeScreen(),
+//     );
+//   }
+// }
+
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'ui/screens/home_screen.dart';
+import 'providers/theme_provider.dart'; // ✅ Import ThemeProvider
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Initialize Firebase with the correct platform options
+  // ✅ Initialize Firebase with correct options
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -15,7 +57,15 @@ void main() async {
     debugPrint('❌ Firebase initialization failed: $e');
   }
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        // ✅ Add any other providers here if needed
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,33 +79,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(), // ✅ Load your real HomeScreen here
     );
   }
 }
-
-// ✅ Extracted HomeScreen as a separate widget for clarity
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('HydraX Firebase Test'),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: const Center(
-        child: Text(
-          '🔥 Firebase Configured Successfully!',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
