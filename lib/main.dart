@@ -61,7 +61,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        // ✅ Add any other providers here if needed
+        // ✅ Add other providers if needed in future
       ],
       child: const MyApp(),
     ),
@@ -73,13 +73,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Apply ThemeProvider for Dark/Light mode
+    var themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp(
       title: 'HydraX',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomeScreen(), // ✅ Load your real HomeScreen here
+      theme: themeProvider.themeData, // ✅ Apply selected theme
+      home: HomeScreen(), // ✅ Load the correct HomeScreen
     );
   }
 }
