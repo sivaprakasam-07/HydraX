@@ -47,6 +47,13 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>HydraX needs Bluetooth to connect to your smart bottle.</string>
-
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to adjust bottle temperature.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Your location is used to adjust bottle temperature.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>HydraX uses your location to adapt water temperature based on your environment.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>HydraX needs location access to automatically adjust water temperature.</string>
 </dict>
 </plist>
