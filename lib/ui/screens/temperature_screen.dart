@@ -137,6 +137,8 @@ import 'package:flutter/material.dart';
 import 'package:hydrax/services/firebase_service.dart';
 
 class TemperatureScreen extends StatefulWidget {
+  const TemperatureScreen({super.key});
+
   @override
   _TemperatureScreenState createState() => _TemperatureScreenState();
 }

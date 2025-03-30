@@ -7,7 +7,7 @@ class BatteryStatus extends StatefulWidget {
   final AnimationController waveController;
   final Color textColor; // Add this line
 
-  BatteryStatus({
+  const BatteryStatus({super.key, 
     required this.batteryLevel,
     required this.isCharging,
     required this.waveController,
@@ -88,7 +88,7 @@ class _BatteryStatusState extends State<BatteryStatus>
                     batteryLevel: widget.batteryLevel,
                     isCharging: widget.isCharging,
                   ),
-                  child: Container(
+                  child: SizedBox(
                     width: 120,
                     height: 300,
                   ),

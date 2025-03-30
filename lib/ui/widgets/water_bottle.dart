@@ -5,7 +5,7 @@ import 'package:hydrax/services/firebase_service.dart';
 class WaterBottle extends StatefulWidget {
   final double fillPercentage; // Water fill level (0 to 1)
 
-  WaterBottle({required this.fillPercentage});
+  const WaterBottle({super.key, required this.fillPercentage});
 
   @override
   _WaterBottleState createState() => _WaterBottleState();

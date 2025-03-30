@@ -12,7 +12,7 @@ class MyBluetoothService {
     List<BluetoothDevice> devices = [];
 
     // Clear previous results
-    List<BluetoothDevice> connectedDevices = await FlutterBluePlus.connectedDevices;
+    List<BluetoothDevice> connectedDevices = FlutterBluePlus.connectedDevices;
     devices.addAll(connectedDevices);
 
     // Listen to scan results
@@ -33,7 +33,7 @@ class MyBluetoothService {
 
     // Stop scanning
     await FlutterBluePlus.stopScan();
-    await scanSubscription?.cancel(); // Cancel subscription
+    await scanSubscription.cancel(); // Cancel subscription
 
     return devices;
   }
@@ -116,6 +116,6 @@ class MyBluetoothService {
   }
 
   Future<List<BluetoothDevice>> get connectedDevices async {
-    return await FlutterBluePlus.connectedDevices;
+    return FlutterBluePlus.connectedDevices;
   }
 }

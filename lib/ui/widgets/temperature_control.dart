@@ -6,7 +6,7 @@ class TemperatureControl extends StatelessWidget {
   final VoidCallback onDecrease;
   final Color textColor;
 
-  TemperatureControl({
+  const TemperatureControl({super.key, 
     required this.temperature,
     required this.onIncrease,
     required this.onDecrease,

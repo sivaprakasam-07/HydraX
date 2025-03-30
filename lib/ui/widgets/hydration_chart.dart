@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class HydrationChart extends StatefulWidget {
+  const HydrationChart({super.key});
+
   @override
   _HydrationChartState createState() => _HydrationChartState();
 }

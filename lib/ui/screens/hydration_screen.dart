@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class HydrationScreen extends StatefulWidget {
+  const HydrationScreen({super.key});
+
   @override
   _HydrationScreenState createState() => _HydrationScreenState();
 }
@@ -38,10 +40,10 @@ class _HydrationScreenState extends State<HydrationScreen> {
 class HydrationChart extends StatelessWidget {
   final List<double> hydrationData;
 
-  HydrationChart({
-    Key? key,
+  const HydrationChart({
+    super.key,
     this.hydrationData = const [500, 750, 1000, 800, 1200, 900, 1100],
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

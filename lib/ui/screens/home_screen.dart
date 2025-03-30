@@ -15,17 +15,19 @@ import '../../services/weather_service.dart';
 import '../../models/weather_model.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final MyBluetoothService _bluetoothService = MyBluetoothService();
-  double _batteryLevel = 15.0;
+  final double _batteryLevel = 15.0;
   double _currentTemperature = 25.0;
   bool _isCharging = false;
   bool _isBluetoothConnected = false;
-  double _waterFillLevel = 0.5;
+  final double _waterFillLevel = 0.5;
   late AnimationController _waveController;
   int _selectedIndex = 0;
 
@@ -213,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     var themeProvider = Provider.of<ThemeProvider>(context);
     bool isDarkMode = themeProvider.isDarkMode;
 
-    List<Widget> _screens = [
+    List<Widget> screens = [
       _buildHomeScreen(),
       Padding(padding: EdgeInsets.all(10), child: HydrationChart()),
       WaterBottle(fillPercentage: _waterFillLevel),
@@ -256,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      body: _screens[_selectedIndex],
+      body: screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Theme.of(context).primaryColor,
         selectedItemColor: isDarkMode ? Colors.cyanAccent : Colors.blueAccent,

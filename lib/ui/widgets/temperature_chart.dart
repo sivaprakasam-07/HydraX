@@ -5,7 +5,7 @@ class TemperatureChart extends StatefulWidget {
   final List<double> temperatureValues;
   final List<double> maxTemperatureValues; // ✅ For Gray Background Rods
 
-  TemperatureChart({
+  const TemperatureChart({super.key, 
     required this.temperatureValues,
     required this.maxTemperatureValues,
   });

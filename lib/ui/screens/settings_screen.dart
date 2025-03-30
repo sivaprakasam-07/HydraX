@@ -4,6 +4,8 @@ import '../../providers/theme_provider.dart';
 import '../widgets/temperature_control.dart';
 
 class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -30,7 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.background,
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         title: Text(
           'Settings',
@@ -52,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onBackground, // Fixes visibility issue
+                color: theme.colorScheme.onSurface, // Fixes visibility issue
               ),
             ),
             SizedBox(height: 10),
@@ -62,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onBackground, // Ensures visibility
+                color: theme.colorScheme.onSurface, // Ensures visibility
               ),
             ),
             SizedBox(height: 10),
@@ -70,10 +72,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               temperature: _selectedTemperature,
               onIncrease: _increaseTemperature,
               onDecrease: _decreaseTemperature,
-              textColor: theme.colorScheme.onBackground, // Pass adaptive color
+              textColor: theme.colorScheme.onSurface, // Pass adaptive color
             ),
             SizedBox(height: 20),
-            Divider(color: theme.colorScheme.onBackground.withOpacity(0.5)), // Adapts to theme
+            Divider(color: theme.colorScheme.onSurface.withOpacity(0.5)), // Adapts to theme
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

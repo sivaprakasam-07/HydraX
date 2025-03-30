@@ -27,7 +27,7 @@ import '../models/water_model.dart';
 
 class WaterProvider with ChangeNotifier {
   int _currentIntake = 0; // Stores current daily water intake in ml
-  List<WaterLog> _waterLogs = []; // Stores historical water logs
+  final List<WaterLog> _waterLogs = []; // Stores historical water logs
   bool _isUserAdaptationEnabled = false; // New Toggle State
   double _recommendedTemperature = 25.0; // Default temperature
 

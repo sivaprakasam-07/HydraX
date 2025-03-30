@@ -8,7 +8,9 @@ class StatsScreen extends StatelessWidget {
     "Wednesday: 750ml - 26°C",
     "Thursday: 500ml - 23°C",
     "Friday: 900ml - 27°C"
-  ]; // 🔥 Replace this with Firebase data later.
+  ];
+
+  const StatsScreen({super.key}); // 🔥 Replace this with Firebase data later.
 
   @override
   Widget build(BuildContext context) {
