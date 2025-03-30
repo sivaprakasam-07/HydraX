@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/weather_model.dart';
 
 class WeatherService {
-  final String apiKey = '97ac0a0133759c240e079380d0cea83b';
+  final String apiKey = '427d14c5c8a42c65d07c06e97888396a';
 
   /// 🌦️ **Fetch Weather by Latitude & Longitude**
   Future<WeatherModel?> getWeather(double latitude, double longitude) async {
