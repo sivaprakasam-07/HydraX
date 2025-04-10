@@ -2,13 +2,20 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
 }
 
 android {
-    namespace = "com.example.hydrax" 
-    compileSdk = 33 // Update to the latest compileSdk version
-    ndkVersion = flutter.ndkVersion
+    namespace = "com.example.hydrax" // Update to your project's namespace
+    ndkVersion = "27.0.12077973" // Use the same NDK version as your friend's file
+    compileSdk = 34 // Update to the latest compileSdk version
+
+    defaultConfig {
+        applicationId = "com.example.hydrax" // Update to your project's applicationId
+        minSdk = 21
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -19,17 +26,8 @@ android {
         jvmTarget = "11"
     }
 
-    defaultConfig {
-        applicationId = "com.example.hydrax" 
-        minSdk = 21 // Ensure this meets your app's requirements
-        targetSdk = 33
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
-
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        getByName("release") {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
